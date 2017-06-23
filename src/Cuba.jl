@@ -84,10 +84,10 @@ const KEY = 0
 # this, in particular the section about "qsort_r" ("Passing closures via
 # pass-through pointers").  Thanks to Steven G. Johnson for pointing to this.
 function generic_integrand!(ndim::Cint, x_::Ptr{Cdouble}, ncomp::Cint,
-                            f_::Ptr{Cdouble}, func!)
+                            f_::Ptr{Cdouble}, func!, nvec::Cint)
     # Get arrays from "x_" and "f_" pointers.
-    x = unsafe_wrap(Array, x_, (ndim,))
-    f = unsafe_wrap(Array, f_, (ncomp,))
+    x = unsafe_wrap(Array, x_, (ndim, nvec))
+    f = unsafe_wrap(Array, f_, (ncomp, nvec))
     func!(x, f)
     return Cint(0)
 end
@@ -98,7 +98,9 @@ integrand_ptr{T}(integrand::T) = cfunction(generic_integrand!, Cint,
                                             Ptr{Cdouble}, # x
                                             Ref{Cint}, # ncomp
                                             Ptr{Cdouble}, # f
-                                            Ref{T})) # userdata
+                                            Ref{T}, # userdata
+                                            Ref{Cint} # nvec
+                                 )) 
 
 abstract Integrand{T}
 
